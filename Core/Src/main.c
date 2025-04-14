@@ -18,11 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "FreeRTOS.h"
-#include <task.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include <task.h>
 
 /* USER CODE END Includes */
 
@@ -44,6 +44,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+// static const TickType_t xDelay = 500 / portTICK_PERIOD_MS;
 
 /* USER CODE END PV */
 
@@ -52,7 +53,10 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_UART4_Init(void);
+static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
+static void blinkLeds(void *argument);
+static void blinkLED(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -68,7 +72,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  TaskHandle_t xHandleLED1, xHandleLED2;  
+  BaseType_t xReturned = 0;
   /* USER CODE END 1 */
 
   /* MPU Configuration--------------------------------------------------------*/
@@ -93,7 +98,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_UART4_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+  LL_TIM_EnableCounter(TIM7);         // Start counting
+
 
   /* USER CODE END 2 */
 
@@ -104,12 +112,23 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+  // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+  
+  // xTaskCreate(blinkLeds,  "Blink_Multiple_LED", 128 * 2, NULL, tskIDLE_PRIORITY + 1, NULL);
+  // // vTaskDelay(xDelay);
+  // LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+  // xTaskCreate(blinkLED,   "Blink_1_LED"       , 128 * 2, NULL, tskIDLE_PRIORITY + 1, NULL);
+  // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+  // // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+  // vTaskStartScheduler();
+  // LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
   while (1)
   {
-    LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
-    LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
-    LL_mDelay(750);
+    // LL_USART_ReceiveData8
+
+    // LL_USART_TransmitData8
+    // LL_USART_ISR_RXNE_RXFNE isr
+    // LL_USART_ReadReg
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -164,6 +183,43 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+  /* USER CODE BEGIN TIM7_Init 0 */
+
+  /* USER CODE END TIM7_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM7);
+
+  /* TIM7 interrupt Init */
+  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM7_IRQn);
+
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  TIM_InitStruct.Prescaler = 64;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 1000;
+  LL_TIM_Init(TIM7, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM7);
+  LL_TIM_SetTriggerOutput(TIM7, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM7);
+  /* USER CODE BEGIN TIM7_Init 2 */
+
+  /* USER CODE END TIM7_Init 2 */
+
+}
+
+/**
   * @brief UART4 Initialization Function
   * @param None
   * @retval None
@@ -196,6 +252,10 @@ static void MX_UART4_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_8;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* UART4 interrupt Init */
+  NVIC_SetPriority(UART4_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(UART4_IRQn);
 
   /* USER CODE BEGIN UART4_Init 1 */
 
@@ -275,6 +335,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
   /**/
   GPIO_InitStruct.Pin = LL_GPIO_PIN_0|LL_GPIO_PIN_1|LL_GPIO_PIN_2|LL_GPIO_PIN_3
                           |LL_GPIO_PIN_4|LL_GPIO_PIN_5|LL_GPIO_PIN_6|LL_GPIO_PIN_7
@@ -334,6 +395,33 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void read_data_from_uart(uint8_t* data){
+  
+    *data = LL_USART_ReceiveData8(UART4);
+    // LL_USART_TransmitData8
+}
+
+void write_data_to_uart(uint8_t* data){
+  LL_USART_TransmitData8(UART4, *data);
+}
+
+static void blinkLeds(void *argument){
+  LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+  // osDelay(1000);
+  // vTaskDelay(xDelay);
+  vTaskDelay(pdMS_TO_TICKS(500));
+  // for (int i=0;i<5000;i++);
+}
+
+static void blinkLED(void *argument){
+  LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+  // for (int i=0;i<25000;i++);
+  // vTaskDelay(2 * xDelay);
+  
+  vTaskDelay(pdMS_TO_TICKS(1000));
+}
+
 /* USER CODE END 4 */
 
  /* MPU Configuration */

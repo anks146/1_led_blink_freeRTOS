@@ -38,6 +38,7 @@ extern "C" {
 #include "stm32h7xx_ll_utils.h"
 #include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_dma.h"
+#include "stm32h7xx_ll_tim.h"
 #include "stm32h7xx_ll_usart.h"
 #include "stm32h7xx_ll_gpio.h"
 
@@ -81,6 +82,8 @@ void Error_Handler(void);
 #define JTCK_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
+void read_data_from_uart(uint8_t* data);
+void write_data_to_uart(uint8_t* data);
 
 /* USER CODE END Private defines */
 

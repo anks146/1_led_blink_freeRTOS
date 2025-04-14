@@ -33,7 +33,7 @@
  /* Hardware description related definitions. **********************************/
  /******************************************************************************/
  
- #define configCPU_CLOCK_HZ                         ( ( unsigned long ) 640000000 )
+ #define configCPU_CLOCK_HZ                         ( ( unsigned long ) 64000000 )
  
  /******************************************************************************/
  /* Scheduling behaviour related definitions. **********************************/
@@ -46,7 +46,7 @@
  #define configUSE_TICKLESS_IDLE                    1
  #define configMAX_PRIORITIES                       5U
  #define configMINIMAL_STACK_SIZE                   128U
- #define configMAX_TASK_NAME_LEN                    4U
+ #define configMAX_TASK_NAME_LEN                    8U
  #define configTICK_TYPE_WIDTH_IN_BITS              TICK_TYPE_WIDTH_32_BITS
  #define configIDLE_SHOULD_YIELD                    1
  #define configTASK_NOTIFICATION_ARRAY_ENTRIES      1U
@@ -72,7 +72,7 @@
  
  #define configSUPPORT_STATIC_ALLOCATION              1
  #define configSUPPORT_DYNAMIC_ALLOCATION             1
- #define configTOTAL_HEAP_SIZE                        4096U
+ #define configTOTAL_HEAP_SIZE                        (16 * 1024U)
  #define configAPPLICATION_ALLOCATED_HEAP             1
  #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP    0
  #define configUSE_MINI_LIST_ITEM                     0
@@ -114,6 +114,7 @@
  #define configUSE_COUNTING_SEMAPHORES          1
  #define configUSE_QUEUE_SETS                   1
  #define configUSE_APPLICATION_TASK_TAG         1
+ #define configOVERRIDE_DEFAULT_TICK_CONFIGURATION 1
  #define INCLUDE_vTaskPrioritySet               1
  #define INCLUDE_uxTaskPriorityGet              1
  #define INCLUDE_vTaskDelete                    1
