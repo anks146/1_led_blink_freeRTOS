@@ -44,7 +44,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -82,9 +81,6 @@ void Error_Handler(void);
 #define JTCK_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-void read_data_from_uart(uint8_t* data);
-void write_data_to_uart(uint8_t* data);
-
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
