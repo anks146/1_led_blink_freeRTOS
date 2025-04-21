@@ -95,7 +95,7 @@
  /* Hook and callback function related definitions. ****************************/
  /******************************************************************************/
  
- #define configUSE_IDLE_HOOK                   0
+ #define configUSE_IDLE_HOOK                   1
  #define configUSE_TICK_HOOK                   0
  #define configUSE_MALLOC_FAILED_HOOK          1
  #define configUSE_DAEMON_TASK_STARTUP_HOOK    0
@@ -139,5 +139,14 @@
  #define INCLUDE_xTaskGetHandle                 1
  #define INCLUDE_xTaskResumeFromISR             1
  
+ 
+#define vPortSVCHandler                         vPortSVCHandler
+#define xPortPendSVHandler                      xPortPendSVHandler
+#define xPortSysTickHandler                     xPortSysTickHandler
+
+// #define vPortSVCHandler SVC_Handler
+// #define xPortPendSVHandler PendSV_Handler
+// #define xPortSysTickHandler xPortSysTickHandler
+
  #endif /* FREERTOS_CONFIG_H */
  

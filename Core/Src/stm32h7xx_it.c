@@ -24,12 +24,14 @@
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include <task.h>
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
 static uint32_t counter = 0;
 static char data[] = "1 second done!!!\r";
+static char stringForSysTick[] = "SysTick is running\r";
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -44,13 +46,13 @@ static char data[] = "1 second done!!!\r";
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+static bool isTaskScheduleRunning = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 void xPortSysTickHandler(void); 
-
+void markTaskScheduleRunning(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -59,6 +61,7 @@ void xPortSysTickHandler(void);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
 
@@ -142,18 +145,19 @@ void UsageFault_Handler(void)
   }
 }
 
+
 /**
   * @brief This function handles System service call via SWI instruction.
   */
-void SVC_Handler(void)
-{
-  /* USER CODE BEGIN SVCall_IRQn 0 */
+// void SVC_Handler(void)
+// {
+//   /* USER CODE BEGIN SVCall_IRQn 0 */
 
-  /* USER CODE END SVCall_IRQn 0 */
-  /* USER CODE BEGIN SVCall_IRQn 1 */
+//   /* USER CODE END SVCall_IRQn 0 */
+//   /* USER CODE BEGIN SVCall_IRQn 1 */
 
-  /* USER CODE END SVCall_IRQn 1 */
-}
+//   /* USER CODE END SVCall_IRQn 1 */
+// }
 
 /**
   * @brief This function handles Debug monitor.
@@ -171,29 +175,29 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles Pendable request for system service.
   */
-void PendSV_Handler(void)
-{
-  /* USER CODE BEGIN PendSV_IRQn 0 */
+// void PendSV_Handler(void)
+// {
+//   /* USER CODE BEGIN PendSV_IRQn 0 */
 
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
+//   /* USER CODE END PendSV_IRQn 0 */
+//   /* USER CODE BEGIN PendSV_IRQn 1 */
 
-  /* USER CODE END PendSV_IRQn 1 */
-}
+//   /* USER CODE END PendSV_IRQn 1 */
+// }
 
 /**
   * @brief This function handles System tick timer.
   */
-void SysTick_Handler(void)
-{
-  /* USER CODE BEGIN SysTick_IRQn 0 */
+// void SysTick_Handler(void)
+// {
+//   /* USER CODE BEGIN SysTick_IRQn 0 */
   
-  /* USER CODE END SysTick_IRQn 0 */
-    HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+//   /* USER CODE END SysTick_IRQn 0 */
 
-  /* USER CODE END SysTick_IRQn 1 */
-}
+//   /* USER CODE BEGIN SysTick_IRQn 1 */
+
+//   /* USER CODE END SysTick_IRQn 1 */
+// }
 
 /******************************************************************************/
 /* STM32H7xx Peripheral Interrupt Handlers                                    */
@@ -215,6 +219,20 @@ void UART4_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM6 global interrupt, DAC1_CH1 and DAC1_CH2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM7 global interrupt.
   */
 void TIM7_IRQHandler(void)
@@ -222,14 +240,20 @@ void TIM7_IRQHandler(void)
   /* USER CODE BEGIN TIM7_IRQn 0 */
  if (LL_TIM_IsActiveFlag_UPDATE(TIM7)) {
 
-    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-    xPortSysTickHandler();
+    // if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+    if(isTaskScheduleRunning){
+      xPortSysTickHandler();
     }
+    // }
 
     counter++;
     if (counter == 1000) {
         counter = 0;
         write_data_to_uart((uint8_t *)&data, sizeof(data));     
+        if(isTaskScheduleRunning){
+          write_data_to_uart((uint8_t *)&stringForSysTick, sizeof(stringForSysTick));
+          // xPortSysTickHandler();
+        }
     }
 
     // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_0);
@@ -245,5 +269,11 @@ void TIM7_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+void markTaskScheduleRunning(void){
+  char stringForTaskSchedule[] = "Task schedule is running\r";
+  write_data_to_uart((uint8_t *)&stringForTaskSchedule, sizeof(stringForTaskSchedule));
+    isTaskScheduleRunning = true;
+}
 
 /* USER CODE END 1 */

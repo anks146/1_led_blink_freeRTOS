@@ -21,6 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32h7xx_it.h"
 #include "FreeRTOS.h"
 #include <task.h>
 #include <queue.h>
@@ -118,10 +119,7 @@ int main(void)
   BSP_LED_Init(LED_RED);
 
   /* Infinite loop */
-  // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
-//   LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_0);
-
-/* USER CODE BEGIN WHILE */
+  /* USER CODE BEGIN WHILE */
     char stringForError[] = "Error for freeRTOS 0";
     char stringForSucceess0[] = "Success for freeRTOS 0";
   LL_TIM_EnableCounter(TIM7);         // Start counting
@@ -146,7 +144,8 @@ int main(void)
   }
     char stringForSucceess[] = "Success for freeRTOS 1";
     write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
-    // vTaskStartScheduler();
+    markTaskScheduleRunning();
+    vTaskStartScheduler();
 
     // char stringForTransmission[] = "Hello world";
   while (1)
@@ -230,11 +229,12 @@ static void MX_TIM7_Init(void)
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM7);
 
   /* TIM7 interrupt Init */
-    NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0));
-    NVIC_EnableIRQ(TIM7_IRQn);
+  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+  NVIC_EnableIRQ(TIM7_IRQn);
 
   /* USER CODE BEGIN TIM7_Init 1 */
 
+  // NVIC_DisableIRQ(TIM7_IRQn);
   LL_TIM_EnableIT_UPDATE(TIM7);
 
   /* USER CODE END TIM7_Init 1 */
@@ -246,7 +246,8 @@ static void MX_TIM7_Init(void)
   LL_TIM_SetTriggerOutput(TIM7, LL_TIM_TRGO_UPDATE);
   LL_TIM_DisableMasterSlaveMode(TIM7);
   /* USER CODE BEGIN TIM7_Init 2 */
-
+  // LL_TIM_DisableCounter(TIM7);
+  // LL_TIM_EnableIT_UPDATE(TIM7);
   /* USER CODE END TIM7_Init 2 */
 
 }
@@ -475,6 +476,14 @@ void vApplicationMallocFailedHook(void)
     }
 }
 
+void vApplicationIdleHook(void)
+{
+  //  char stringForIdle[] = "Idle task is running";
+  //   write_data_to_uart((uint8_t*)(&stringForIdle), sizeof(stringForIdle));
+  //   LL_TIM_EnableIT_UPDATE(TIM7);
+  //   NVIC_EnableIRQ(TIM7_IRQn);
+  //   LL_TIM_EnableCounter(TIM7);
+}
 // void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
 // {
 //     // The buffer that will hold the task's TCB (Task Control Block)
@@ -519,6 +528,28 @@ void MPU_Config(void)
   /* Enables the MPU */
   LL_MPU_Enable(LL_MPU_CTRL_PRIVILEGED_DEFAULT);
 
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
 }
 
 /**
