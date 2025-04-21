@@ -21,7 +21,17 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "FreeRTOS.h"
+#include <task.h>
+#include <queue.h>
+#include <timers.h>
+#include <semphr.h>
+#include "stdio.h"
+/*
+#include <queue.h>
+#include <timers.h>
+#include <semphr.h>
+*/
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,6 +52,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+// static const TickType_t xDelay = 500 / portTICK_PERIOD_MS;
+static char stringForMessage1[] = "Task 1 is running";
+static char stringForMessage2[] = "Task 2 is running";
 
 /* USER CODE END PV */
 
@@ -52,7 +65,8 @@ static void MX_GPIO_Init(void);
 static void MX_UART4_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void blinkLeds(void *argument);
+static void blinkLED(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -68,6 +82,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+//   TaskHandle_t xHandleLED1,
 
   /* USER CODE END 1 */
 
@@ -95,9 +110,6 @@ int main(void)
   MX_UART4_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  
-
-
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -106,10 +118,47 @@ int main(void)
   BSP_LED_Init(LED_RED);
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+//   LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_0);
+
+/* USER CODE BEGIN WHILE */
+    char stringForError[] = "Error for freeRTOS 0";
+    char stringForSucceess0[] = "Success for freeRTOS 0";
   LL_TIM_EnableCounter(TIM7);         // Start counting
+  write_data_to_uart((uint8_t *)&stringForSucceess0, sizeof(stringForSucceess0));
+
+
+//   LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+  BaseType_t ret = xTaskCreate(blinkLeds,  "Blink_Multiple_LED", 128 * 2, NULL, configMAX_PRIORITIES - 7, NULL);
+  if(ret != pdPASS){
+    // stringForError = "Error for freeRTOS 1";
+    write_data_to_uart((uint8_t *)&stringForError, sizeof(stringForError));
+    write_data_to_uart((uint8_t *)&ret, sizeof(ret));
+    LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+  }
+
+  ret = xTaskCreate(blinkLED,   "Blink_1_LED"       , 128 * 2, NULL, configMAX_PRIORITIES - 7, NULL);
+  if(ret != pdPASS){
+    // stringForError = "Error for freeRTOS 1";
+    write_data_to_uart((uint8_t *)&stringForError, sizeof(stringForError));
+    write_data_to_uart((uint8_t *)&ret, sizeof(ret));
+    LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14);
+  }
+    char stringForSucceess[] = "Success for freeRTOS 1";
+    write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
+    // vTaskStartScheduler();
+
+    // char stringForTransmission[] = "Hello world";
   while (1)
   {
+    // write_data_to_uart((uint8_t *)&stringForTransmission, sizeof(stringForTransmission));
+    // HAL_Delay(1000);
+
+
+    // LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+    // LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+    // HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -181,17 +230,17 @@ static void MX_TIM7_Init(void)
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM7);
 
   /* TIM7 interrupt Init */
-  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
-  NVIC_EnableIRQ(TIM7_IRQn);
+    NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0));
+    NVIC_EnableIRQ(TIM7_IRQn);
 
   /* USER CODE BEGIN TIM7_Init 1 */
 
   LL_TIM_EnableIT_UPDATE(TIM7);
 
   /* USER CODE END TIM7_Init 1 */
-  TIM_InitStruct.Prescaler = 63999;
+  TIM_InitStruct.Prescaler = 63;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 1000;
+  TIM_InitStruct.Autoreload = 999;
   LL_TIM_Init(TIM7, &TIM_InitStruct);
   LL_TIM_EnableARRPreload(TIM7);
   LL_TIM_SetTriggerOutput(TIM7, LL_TIM_TRGO_UPDATE);
@@ -378,6 +427,82 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// void read_data_from_uart(uint8_t* data){
+  
+//     // *data = LL_USART_ReceiveData8(UART4);
+//     // LL_USART_TransmitData8
+// }
+
+void write_data_to_uart(uint8_t* data, uint8_t length){
+	
+    // if(data == NULL)    return;
+    while(length > 0){
+        while(!LL_USART_IsActiveFlag_TC(UART4));
+        LL_USART_TransmitData8(UART4, (uint8_t)(*data));
+        length--;
+        data++;
+    }
+    // LL_USART_TransmitData8(UART4, 82);
+    // LL_USART_TransmitData8(UART4, 110);
+}
+
+static void blinkLeds(void *argument){
+    write_data_to_uart((uint8_t*)(&stringForMessage1), sizeof(stringForMessage1));
+
+    LL_GPIO_TogglePin(GPIOB, LL_GPIO_PIN_14| LL_GPIO_PIN_0);
+    vTaskDelay(pdMS_TO_TICKS(500));
+}
+
+static void blinkLED(void *argument){
+    write_data_to_uart((uint8_t*)(&stringForMessage2), sizeof(stringForMessage2));
+
+    LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    while (1);
+}
+
+void vApplicationMallocFailedHook(void)
+{
+    char stringForMallocError[] = "Error for malloc";
+    while (1){
+        write_data_to_uart((uint8_t*)(&stringForMallocError), sizeof(stringForMallocError));
+        HAL_Delay(1000);
+    }
+}
+
+// void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+// {
+//     // The buffer that will hold the task's TCB (Task Control Block)
+//     static StaticTask_t xIdleTaskTCBBuffer;
+
+//     // The buffer that will hold the task's stack
+//     static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
+
+//     // Pass the buffers to FreeRTOS
+//     *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+//     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
+//     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+// }
+
+// void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
+// {
+//     // The buffer that will hold the task's TCB (Task Control Block)
+//     static StaticTask_t xTimerTaskTCBBuffer;
+
+//     // The buffer that will hold the task's stack
+//     static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
+
+//     // Pass the buffers to FreeRTOS
+//     *ppxTimerTaskTCBBuffer = &xTimerTaskTCBBuffer;
+//     *ppxTimerTaskStackBuffer = uxTimerTaskStack;
+//     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
+// }
+
 /* USER CODE END 4 */
 
  /* MPU Configuration */

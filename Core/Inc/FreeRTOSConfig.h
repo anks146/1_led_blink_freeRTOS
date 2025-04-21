@@ -28,21 +28,24 @@
 
  #ifndef FREERTOS_CONFIG_H
  #define FREERTOS_CONFIG_H
- 
+ extern uint32_t SystemCoreClock;
+
  /******************************************************************************/
  /* Hardware description related definitions. **********************************/
  /******************************************************************************/
  
- #define configCPU_CLOCK_HZ                         ( ( unsigned long ) 64000000 )
- 
+// #define configCPU_CLOCK_HZ                         ( ( unsigned long ) 64000000 )
+
+#define configCPU_CLOCK_HZ                         ( SystemCoreClock )
  /******************************************************************************/
  /* Scheduling behaviour related definitions. **********************************/
  /******************************************************************************/
  
- #define configTICK_RATE_HZ                         ( ( unsigned long ) 10000 )
+ #define configTICK_RATE_HZ                         ( ( unsigned long ) 1000 )
+ #define configUSE_SYS_TICK                         0   // Ensure SysTick is enabled for FreeRTOS
  #define configUSE_PREEMPTION                       1
  #define configUSE_TIME_SLICING                     1
- #define configUSE_PORT_OPTIMISED_TASK_SELECTION    0
+ #define configUSE_PORT_OPTIMISED_TASK_SELECTION    1
  #define configUSE_TICKLESS_IDLE                    1
  #define configMAX_PRIORITIES                       5U
  #define configMINIMAL_STACK_SIZE                   128U
@@ -73,27 +76,30 @@
  #define configSUPPORT_STATIC_ALLOCATION              1
  #define configSUPPORT_DYNAMIC_ALLOCATION             1
  #define configTOTAL_HEAP_SIZE                        (16 * 1024U)
- #define configAPPLICATION_ALLOCATED_HEAP             1
+ #define configAPPLICATION_ALLOCATED_HEAP             0
  #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP    0
  #define configUSE_MINI_LIST_ITEM                     0
  
  /******************************************************************************/
  /* Interrupt nesting behaviour configuration. *********************************/
  /******************************************************************************/
- 
+ /*
  #define configKERNEL_INTERRUPT_PRIORITY          0U
  #define configMAX_SYSCALL_INTERRUPT_PRIORITY     0U
  #define configMAX_API_CALL_INTERRUPT_PRIORITY    0U
- 
+*/
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY 5
+#define __NVIC_PRIO_BITS                            4U
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY (5 << (8 - __NVIC_PRIO_BITS))  // = 80
  /******************************************************************************/
  /* Hook and callback function related definitions. ****************************/
  /******************************************************************************/
  
  #define configUSE_IDLE_HOOK                   0
  #define configUSE_TICK_HOOK                   0
- #define configUSE_MALLOC_FAILED_HOOK          0
+ #define configUSE_MALLOC_FAILED_HOOK          1
  #define configUSE_DAEMON_TASK_STARTUP_HOOK    0
- #define configCHECK_FOR_STACK_OVERFLOW        0
+ #define configCHECK_FOR_STACK_OVERFLOW        2
  
  /******************************************************************************/
  /* Run time and task stats gathering related definitions. *********************/

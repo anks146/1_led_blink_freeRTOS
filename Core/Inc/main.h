@@ -44,6 +44,11 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include <task.h>
+#include <queue.h>
+#include <timers.h>
+#include <semphr.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -65,6 +70,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void write_data_to_uart(uint8_t* data, uint8_t length);
 
 /* USER CODE END EFP */
 
