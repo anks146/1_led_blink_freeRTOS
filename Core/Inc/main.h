@@ -72,6 +72,8 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void write_data_to_uart(uint8_t* data, uint8_t length);
 
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,   StackType_t **ppxTimerTaskStackBuffer,   uint32_t *pulTimerTaskStackSize );
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
