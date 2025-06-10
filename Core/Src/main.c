@@ -130,12 +130,11 @@ int main(void)
   markTaskScheduleRunning();
   vTaskStartScheduler();
 
-
   // char stringForError[] = "Error for freeRTOS 0";
   // char stringForSucceess0[] = "Success for freeRTOS 0";
   // write_data_to_uart((uint8_t *)&stringForSucceess0, sizeof(stringForSucceess0));
-//   TaskHandle_t xTaskHandle1;
-//   TaskHandle_t xTaskHandle2;
+  // TaskHandle_t xTaskHandle1;
+  // TaskHandle_t xTaskHandle2;
   // TaskStatus_t xTaskDetails;
 
 
@@ -170,12 +169,13 @@ int main(void)
   //   write_data_to_uart((uint8_t *)&stringForError, sizeof(stringForError));
   // }
 
-  //   char stringForSucceess[] = "Successessfully done";
-  //   size_t freeHeap = xPortGetFreeHeapSize();
-  //   write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
-  //   // markTaskScheduleRunning();
-    // vTaskStartScheduler();
-    // write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
+  // char stringForSucceess[] = "Successessfully done";
+  // size_t freeHeap = xPortGetFreeHeapSize();
+  // write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
+  // markTaskScheduleRunning();
+  // vTaskStartScheduler();
+  // write_data_to_uart((uint8_t *)&stringForSucceess, sizeof(stringForSucceess));
+
   while (1)
   {
     LL_GPIO_TogglePin(GPIOE, LL_GPIO_PIN_1);
@@ -253,8 +253,8 @@ static void MX_TIM7_Init(void)
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM7);
 
   /* TIM7 interrupt Init */
-  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
-  // NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 15, 0));
+  // NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 15, 0));
   NVIC_EnableIRQ(TIM7_IRQn);
 
   /* USER CODE BEGIN TIM7_Init 1 */
